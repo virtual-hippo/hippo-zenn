@@ -1,0 +1,135 @@
+---
+title: "【簡単】React Router v7 で認証/認可制御を超簡素に実装しました"
+emoji: "😺"
+type: "tech" # tech: 技術記事 / idea: アイデア
+topics: ["react"]
+published: false
+---
+
+# はじめに
+
+React Router v7 で以下を実装してみました.
+
+- Cookie に含まれたトークンの検証によるユーザー認証
+- 認証したユーザーが各 route にアクセスできるかの認可制御
+
+React Router v7 の仕様の詳細説明や思想の解説は行いません.
+
+# 成果物
+
+https://github.com/virtual-hippo/hello-react-router
+
+# 実装のポイント
+
+- 認可制御用の layout を用意する
+- 認可が必要な route は認可制御用の layout 配下に route を設定する
+
+## 認可制御用の layout を用意する
+
+「レイアウト」という言葉からは, UI を規定するものというイメージを持ちがちですが, React Router v7 では `loader` や `action` などの [Route Module API](https://reactrouter.com/start/framework/route-module) も「レイアウト」のスコープに入ります.
+
+以下のコンポーネントでは, `loader()` において, リクエストヘッダに含まれた Cookie から token を取得し検証しています.
+
+※トークン検証失敗時に, `Error` ではなくて `redirect` を throw しているのも React Router っぽいです.
+
+```tsx
+// app/routes/_layouts/auth.tsx
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const cookie = request.headers.get("Cookie");
+  const token = cookie
+    ?.split("; ")
+    .find((row) => row.startsWith("id-token="))
+    ?.split("=")[1];
+
+  try {
+    const jwtPayLoad = token && (await verifyToken(token));
+
+    if (!jwtPayLoad) {
+      // トークンが無効な場合
+      throw redirect("/login", {
+        headers: {
+          "Set-Cookie": "auth-token=; Path=/; HttpOnly; Secure; Max-Age=0",
+        },
+      });
+    }
+
+    // jwtPayLoad の中身は, createToken() で指定したペイロードになっているはず
+    const user = jwtPayLoad as Omit<User, "auth">;
+    return { userName: user?.name ?? "Unknown" };
+  } catch {
+    // トークンの検証に失敗した場合
+    throw redirect("/login", {
+      headers: {
+        "Set-Cookie": "auth-token=; Path=/; HttpOnly; Secure; Max-Age=0",
+      },
+    });
+  }
+}
+
+export default function Layout({ loaderData }: Route.ComponentProps) {
+  return (
+    <>
+      <Outlet />
+    </>
+  );
+}
+```
+
+:::message
+認可制御については [middleware](https://reactrouter.com/start/framework/route-module#middleware) も利用できそうです (というかこちらも利用すべきかもしれません).
+
+しかし, こちらについては検証できてないです.
+
+また, フレームワークモードでは安定板としてリリースされていなさそうです.
+
+https://reactrouter.com/how-to/middleware
+:::
+
+## 認可が必要な route は認可制御用 layout 配下に route を設定する
+
+`/dashboard`, `/dashboard/settings` の route を 認可制御用の layout 配下にネストさせます。
+
+こうすることで, 上記 route にアクセスした際は, token 検証処理が実施されます.
+
+token 検証に失敗した場合はログイン画面にリダイレクトされます.
+
+```ts
+// app/routes.ts
+import {
+  type RouteConfig,
+  index,
+  layout,
+  route,
+} from "@react-router/dev/routes";
+
+export default [
+  layout("routes/_layouts/index.tsx", [
+    index("routes/home.tsx"),
+    route("login", "routes/login.tsx"),
+
+    layout("routes/_layouts/auth.tsx", { id: "auth" }, [
+      route("dashboard", "routes/dashboard/_layout.tsx", [
+        index("routes/dashboard/index.tsx"),
+        route("settings", "routes/dashboard/settings.tsx"),
+      ]),
+    ]),
+  ]),
+] satisfies RouteConfig;
+```
+
+# 参考資料
+
+### りあクト！ TypeScript で始めるつらくない React 開発【③ React 実践編】
+
+わたしが React に触れる際にはお世話になっている本です.
+
+認証/認可制御 の実装例が見当たらなかったので試しに自分で実装してみました.
+
+https://oukayuka.booth.pm/items/2367992
+
+### React Router Home
+
+公式ドキュメントです.
+
+https://reactrouter.com/home

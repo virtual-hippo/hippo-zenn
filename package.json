@@ -1,0 +1,24 @@
+{
+  "name": "hippo-zenn",
+  "version": "1.0.0",
+  "description": "The repository for Zenn integration.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/virtual-hippo/hippo-zenn.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/virtual-hippo/hippo-zenn/issues"
+  },
+  "homepage": "https://github.com/virtual-hippo/hippo-zenn#readme",
+  "dependencies": {
+    "zenn-cli": "^0.2.3"
+  }
+}

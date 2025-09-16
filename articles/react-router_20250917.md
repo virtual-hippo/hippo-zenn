@@ -1,5 +1,5 @@
 ---
-title: "【簡単】React Router v7 で認証/認可制御を超簡素に実装しました"
+title: "Hello React Router v7 -  認証/認可制御を超簡素に実装してみました"
 emoji: "😺"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["react"]

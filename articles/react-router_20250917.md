@@ -36,32 +36,24 @@ https://github.com/virtual-hippo/hello-react-router
 // app/routes/_layouts/auth.tsx
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const cookie = request.headers.get("Cookie");
-  const token = cookie
-    ?.split("; ")
-    .find((row) => row.startsWith("id-token="))
-    ?.split("=")[1];
+  const cookieHeader = request.headers.get("Cookie");
+  const cookie = (await idTokenCookie.parse(cookieHeader)) || {};
+
+  // トークンが存在しない場合はログイン画面へリダイレクト
+  if (!cookie["id-token"]) {
+    throw redirect("/login");
+  }
 
   try {
-    const jwtPayLoad = token && (await verifyToken(token));
-
-    if (!jwtPayLoad) {
-      // トークンが無効な場合
-      throw redirect("/login", {
-        headers: {
-          "Set-Cookie": "auth-token=; Path=/; HttpOnly; Secure; Max-Age=0",
-        },
-      });
-    }
-
-    // jwtPayLoad の中身は, createToken() で指定したペイロードになっているはず
-    const user = jwtPayLoad as Omit<User, "auth">;
+    const user = verifyIdToken(cookie["id-token"]);
     return { userName: user?.name ?? "Unknown" };
   } catch {
-    // トークンの検証に失敗した場合
+    // トークンの検証に失敗した場合はログイン画面へリダイレクト
+    // 単に有効期限の場合は refresh トークンを使って再発行する処理を入れたいが今回は実装をサボる
+    cookie["id-token"] = "";
     throw redirect("/login", {
       headers: {
-        "Set-Cookie": "auth-token=; Path=/; HttpOnly; Secure; Max-Age=0",
+        "Set-Cookie": await idTokenCookie.serialize(cookie, { maxAge: 0 }),
       },
     });
   }

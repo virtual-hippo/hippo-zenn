@@ -3,7 +3,8 @@ title: "Hello React Router v7 -  認証/認可制御を超簡素に実装して�
 emoji: "😺"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["react"]
-published: false
+published: true # trueを指定する
+published_at: 2025-09-19 08:00 # 未来の日時を指定する
 ---
 
 # はじめに
@@ -17,7 +18,7 @@ React Router v7 の仕様の詳細説明や思想の解説は行いません.
 
 # 成果物
 
-https://github.com/virtual-hippo/hello-react-router
+https://github.com/virtual-hippo/hello-react-router/tree/v0.0.0
 
 # 実装のポイント
 
@@ -71,9 +72,9 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
 :::message
 認可制御については [middleware](https://reactrouter.com/start/framework/route-module#middleware) も利用できそうです (というかこちらも利用すべきかもしれません).
 
-しかし, こちらについては検証できてないです.
+しかし, 検証できてないです.
 
-また, フレームワークモードでは安定板としてリリースされていなさそうです.
+また, middleware はフレームワークモードでは安定板としてリリースされていなさそうです.
 
 https://reactrouter.com/how-to/middleware
 :::

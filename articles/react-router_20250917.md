@@ -79,11 +79,15 @@ export default function Layout({ loaderData }: Route.ComponentProps) {
 https://reactrouter.com/how-to/middleware
 :::
 
-## 認可が必要な route は認可制御用 layout 配下に route を設定する
+## 認可が必要な route は認可制御用の layout 配下に route を設定する
 
-`/dashboard`, `/dashboard/settings` の route を 認可制御用の layout 配下にネストさせます。
+`/dashboard`, `/dashboard/settings` の route を 認可制御用の layout 配下にネストさせます.
 
-こうすることで, 上記 route にアクセスした際は, token 検証処理が実施されます.
+この構造により
+
+- `/dashboard` へのアクセス → auth layout の loader が実行される
+- `/dashboard/settings` へのアクセス → 同様に auth layout の loader が実行される
+- `/login` へのアクセス → auth layout を通らないため認証不要
 
 token 検証に失敗した場合はログイン画面にリダイレクトされます.
 
@@ -115,9 +119,9 @@ export default [
 
 ### りあクト！ TypeScript で始めるつらくない React 開発【③ React 実践編】
 
-わたしが React に触れる際にはお世話になっている本です.
+わたしが React に触れる際にはお世話になっている本です (第 5 版と第 4 版を持っています).
 
-認証/認可制御 の実装例が見当たらなかったので試しに自分で実装してみました.
+認証/認可制御の実装例を探せなかったので, 試しに自分で実装してみました.
 
 https://oukayuka.booth.pm/items/2367992
 
